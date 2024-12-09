@@ -97,7 +97,7 @@ resource "aws_route_table" "california_route_table_private_subnet" {
 
   route {
     cidr_block         = "10.230.0.0/16"
-    transit_gateway_id = aws_ec2_transit_gateway.california-TGW.id
+    transit_gateway_id = aws_ec2_transit_gateway.local_california.id
   }
 
   tags = {
@@ -230,7 +230,9 @@ resource "aws_launch_template" "california_LT" {
   image_id      = "ami-038bba9a164eb3dc1"
   instance_type = "t2.micro"
 
-    network_interfaces {
+  user_data = filebase64("userdata.sh")
+
+  network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.california_ec2_sg.id]
   }
@@ -260,7 +262,7 @@ resource "aws_autoscaling_group" "california_ec2_asg" {
 
   health_check_type = "EC2"
 }
-
+/*
 // TGW
 resource "aws_ec2_transit_gateway" "california-TGW" {
   description = "california-TGW"
@@ -280,4 +282,4 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "california-TGW-attachment" {
   vpc_id             = aws_vpc.california.id
   provider           = aws.california
 }
-
+*/

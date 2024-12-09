@@ -97,7 +97,7 @@ resource "aws_route_table" "hong_kong_route_table_private_subnet" {
 
   route {
     cidr_block         = "10.230.0.0/16"
-    transit_gateway_id = aws_ec2_transit_gateway.hong_kong-TGW.id
+    transit_gateway_id = aws_ec2_transit_gateway.local_hong_kong.id
   }
 
   tags = {
@@ -230,6 +230,8 @@ resource "aws_launch_template" "hong_kong_LT" {
   image_id      = "ami-06f707739f2271995"
   instance_type = "t3.micro"
 
+  user_data = filebase64("userdata.sh")
+
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.hong_kong_ec2_sg.id]
@@ -260,7 +262,7 @@ resource "aws_autoscaling_group" "hong_kong_ec2_asg" {
 
   health_check_type = "EC2"
 }
-
+/*
 // TGW
 resource "aws_ec2_transit_gateway" "hong_kong-TGW" {
   description = "hong_kong-TGW"
@@ -280,3 +282,4 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "hong_kong-TGW-attachment" {
   vpc_id             = aws_vpc.hong_kong.id
   provider           = aws.hong_kong
 }
+*/

@@ -97,7 +97,7 @@ resource "aws_route_table" "london_route_table_private_subnet" {
 
   route {
     cidr_block         = "10.230.0.0/16"
-    transit_gateway_id = aws_ec2_transit_gateway.london-TGW.id
+    transit_gateway_id = aws_ec2_transit_gateway.local_london.id
   }
 
   tags = {
@@ -231,6 +231,8 @@ resource "aws_launch_template" "london_LT" {
   image_id      = "ami-0c76bd4bd302b30ec"
   instance_type = "t2.micro"
 
+  user_data = filebase64("userdata.sh")
+
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.london_ec2_sg.id]
@@ -261,7 +263,7 @@ resource "aws_autoscaling_group" "london_ec2_asg" {
 
   health_check_type = "EC2"
 }
-
+/*
 // TGW
 resource "aws_ec2_transit_gateway" "london-TGW" {
   description = "london-TGW"
@@ -281,3 +283,4 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "london-TGW-attachment" {
   vpc_id             = aws_vpc.london.id
   provider           = aws.london
 }
+*/

@@ -97,7 +97,7 @@ resource "aws_route_table" "sydney_route_table_private_subnet" {
 
   route {
     cidr_block         = "10.230.0.0/16"
-    transit_gateway_id = aws_ec2_transit_gateway.sydney-TGW.id
+    transit_gateway_id = aws_ec2_transit_gateway.local_sydney.id
   }
 
   tags = {
@@ -230,6 +230,8 @@ resource "aws_launch_template" "sydney_LT" {
   image_id      = "ami-0146fc9ad419e2cfd"
   instance_type = "t2.micro"
 
+  user_data = filebase64("userdata.sh")
+
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.sydney_ec2_sg.id]
@@ -260,7 +262,7 @@ resource "aws_autoscaling_group" "sydney_ec2_asg" {
 
   health_check_type = "EC2"
 }
-
+/*
 // TGW
 resource "aws_ec2_transit_gateway" "sydney-TGW" {
   description = "sydney-TGW"
@@ -280,3 +282,4 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "sydney-TGW-attachment" {
   vpc_id             = aws_vpc.sydney.id
   provider           = aws.sydney
 }
+*/

@@ -6,7 +6,7 @@ variable "vpc_availability_zone_Tokyo" {
 
 // VPC
 resource "aws_vpc" "tokyo" {
-  cidr_block           = "10.236.0.0/16"
+  cidr_block           = "10.230.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   provider             = aws.tokyo
@@ -94,10 +94,35 @@ resource "aws_route_table" "tokyo_route_table_private_subnet" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_nat_gateway.tokyo_nat.id
   }
+  /*
+  route {
+    cidr_block = "10.231.0.0/16"
+    gateway_id = aws_ec2_transit_gateway.peer.id
+  }
+*/
+  route {
+    cidr_block = "10.232.0.0/16"
+    gateway_id = aws_ec2_transit_gateway.peer.id
+  }
 
   route {
-    cidr_block         = "10.230.0.0/16"
-    transit_gateway_id = aws_ec2_transit_gateway.tokyo-TGW.id
+    cidr_block = "10.233.0.0/16"
+    gateway_id = aws_ec2_transit_gateway.peer.id
+  }
+
+  route {
+    cidr_block = "10.234.0.0/16"
+    gateway_id = aws_ec2_transit_gateway.peer.id
+  }
+
+  route {
+    cidr_block = "10.235.0.0/16"
+    gateway_id = aws_ec2_transit_gateway.peer.id
+  }
+
+  route {
+    cidr_block = "10.236.0.0/16"
+    gateway_id = aws_ec2_transit_gateway.peer.id
   }
 
   tags = {
@@ -230,6 +255,8 @@ resource "aws_launch_template" "tokyo_LT" {
   image_id      = "ami-023ff3d4ab11b2525"
   instance_type = "t2.micro"
 
+  user_data = filebase64("userdata.sh")
+
   network_interfaces {
     associate_public_ip_address = false
     security_groups             = [aws_security_group.tokyo_ec2_sg.id]
@@ -260,7 +287,7 @@ resource "aws_autoscaling_group" "tokyo_ec2_asg" {
 
   health_check_type = "EC2"
 }
-
+/*
 // TGW
 resource "aws_ec2_transit_gateway" "tokyo-TGW" {
   description = "tokyo-TGW"
@@ -280,3 +307,4 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "tokyo-TGW-attachment" {
   vpc_id             = aws_vpc.tokyo.id
   provider           = aws.tokyo
 }
+*/

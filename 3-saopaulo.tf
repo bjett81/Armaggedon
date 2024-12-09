@@ -39,23 +39,23 @@ resource "aws_subnet" "private_subnet_SaoPaulo" {
 }
 
 // IGW
-resource "aws_internet_gateway" "sao_paulo_igw" {
+resource "aws_internet_gateway" "saoaws_sao_paulo_igw" {
   vpc_id   = aws_vpc.saopaulo.id
   provider = aws.sao_paulo
 
   tags = {
-    Name = "sao_paulo_igw"
+    Name = "saoaws_sao_paulo_igw"
   }
 }
 
 // RT for the public subnet
-resource "aws_route_table" "sao_paulo_route_table_public_subnet" {
+resource "aws_route_table" "saoaws_sao_paulo_route_table_public_subnet" {
   vpc_id   = aws_vpc.saopaulo.id
   provider = aws.sao_paulo
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.sao_paulo_igw.id
+    gateway_id = aws_internet_gateway.saoaws_sao_paulo_igw.id
   }
 
   tags = {
@@ -65,28 +65,28 @@ resource "aws_route_table" "sao_paulo_route_table_public_subnet" {
 }
 
 // Association between RT and IG
-resource "aws_route_table_association" "sao_paulo_public_subnet_association" {
-  route_table_id = aws_route_table.sao_paulo_route_table_public_subnet.id
+resource "aws_route_table_association" "saoaws_sao_paulo_public_subnet_association" {
+  route_table_id = aws_route_table.saoaws_sao_paulo_route_table_public_subnet.id
   count          = length((var.vpc_availability_zone_SaoPaulo))
   subnet_id      = element(aws_subnet.public_subnet_SaoPaulo[*].id, count.index)
   provider       = aws.sao_paulo
 }
 
 // EIP
-resource "aws_eip" "sao_paulo_eip" {
+resource "aws_eip" "saoaws_sao_paulo_eip" {
   domain   = "vpc"
   provider = aws.sao_paulo
 }
 
 // NAT
 resource "aws_nat_gateway" "saopaulo_nat" {
-  allocation_id = aws_eip.sao_paulo_eip.id
+  allocation_id = aws_eip.saoaws_sao_paulo_eip.id
   subnet_id     = aws_subnet.public_subnet_SaoPaulo[0].id
   provider      = aws.sao_paulo
 }
 
 // RT for private Subnet
-resource "aws_route_table" "sao_paulo_route_table_private_subnet" {
+resource "aws_route_table" "saoaws_sao_paulo_route_table_private_subnet" {
   vpc_id   = aws_vpc.saopaulo.id
   provider = aws.sao_paulo
 
@@ -94,12 +94,12 @@ resource "aws_route_table" "sao_paulo_route_table_private_subnet" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_nat_gateway.saopaulo_nat.id
   }
-
+  /*
   route {
     cidr_block         = "10.230.0.0/16"
-    transit_gateway_id = aws_ec2_transit_gateway.sao_paulo-TGW.id
+    transit_gateway_id = aws_ec2_transit_gateway.local_sao_paulo.id
   }
-
+*/
   tags = {
     Name = "Route Table for Private Subnet",
   }
@@ -107,16 +107,16 @@ resource "aws_route_table" "sao_paulo_route_table_private_subnet" {
 }
 
 // RT Association Private
-resource "aws_route_table_association" "sao_paulo_private_subnet_association" {
-  route_table_id = aws_route_table.sao_paulo_route_table_private_subnet.id
+resource "aws_route_table_association" "saoaws_sao_paulo_private_subnet_association" {
+  route_table_id = aws_route_table.saoaws_sao_paulo_route_table_private_subnet.id
   count          = length((var.vpc_availability_zone_SaoPaulo))
   subnet_id      = element(aws_subnet.private_subnet_SaoPaulo[*].id, count.index)
   provider       = aws.sao_paulo
 }
 
 // Security Groups
-resource "aws_security_group" "sao_paulo_alb_sg" {
-  name        = "sao_paulo-alb-sg"
+resource "aws_security_group" "saoaws_sao_paulo_alb_sg" {
+  name        = "saoaws_sao_paulo-alb-sg"
   description = "Security Group for Application Load Balancer"
   provider    = aws.sao_paulo
 
@@ -142,7 +142,7 @@ resource "aws_security_group" "sao_paulo_alb_sg" {
 
 // Security Group For EC2
 
-resource "aws_security_group" "sao_paulo_ec2_sg" {
+resource "aws_security_group" "saoaws_sao_paulo_ec2_sg" {
   name        = "sao-paulo-ec2-sg"
   description = "Security Group for Webserver Instance"
   provider    = aws.sao_paulo
@@ -153,7 +153,7 @@ resource "aws_security_group" "sao_paulo_ec2_sg" {
     from_port       = 80
     to_port         = 80
     protocol        = "TCP"
-    security_groups = [aws_security_group.sao_paulo_alb_sg.id]
+    security_groups = [aws_security_group.saoaws_sao_paulo_alb_sg.id]
 
   }
 
@@ -175,7 +175,7 @@ resource "aws_lb" "saopaulo_alb" {
   load_balancer_type         = "application"
   internal                   = false
   subnets                    = aws_subnet.public_subnet_SaoPaulo[*].id
-  depends_on                 = [aws_internet_gateway.sao_paulo_igw]
+  depends_on                 = [aws_internet_gateway.saoaws_sao_paulo_igw]
   enable_deletion_protection = false
   provider                   = aws.sao_paulo
 
@@ -231,25 +231,27 @@ resource "aws_launch_template" "saopaulo_LT" {
   image_id      = "ami-0c820c196a818d66a"
   instance_type = "t2.micro"
 
+  user_data = filebase64("userdata.sh")
+
   network_interfaces {
     associate_public_ip_address = false
-    security_groups             = [aws_security_group.sao_paulo_ec2_sg.id]
+    security_groups             = [aws_security_group.saoaws_sao_paulo_ec2_sg.id]
   }
 
   tag_specifications {
     resource_type = "instance"
     tags = {
-      Name = "sao_paulo-ec2-web-server"
+      Name = "saoaws_sao_paulo-ec2-web-server"
     }
   }
 }
 
 // Auto Scaling Group
-resource "aws_autoscaling_group" "sao_paulo_ec2_asg" {
+resource "aws_autoscaling_group" "saoaws_sao_paulo_ec2_asg" {
   max_size            = 3
   min_size            = 2
   desired_capacity    = 2
-  name                = "sao_paulo-web-server-asg"
+  name                = "saoaws_sao_paulo-web-server-asg"
   target_group_arns   = [aws_lb_target_group.saopaulo-tg.id]
   vpc_zone_identifier = aws_subnet.private_subnet_SaoPaulo[*].id
   provider            = aws.sao_paulo
@@ -261,23 +263,24 @@ resource "aws_autoscaling_group" "sao_paulo_ec2_asg" {
 
   health_check_type = "EC2"
 }
-
+/*
 // TGW
-resource "aws_ec2_transit_gateway" "sao_paulo-TGW" {
-  description = "sao_paulo-TGW"
+resource "aws_ec2_transit_gateway" "saoaws_sao_paulo-TGW" {
+  description = "saoaws_sao_paulo-TGW"
   provider    = aws.sao_paulo
 
   tags = {
-    Name     = "sao_paulo-TGW"
+    Name     = "saoaws_sao_paulo-TGW"
     Service  = "TGW"
-    Location = "sao_paulo"
+    Location = "saoaws_sao_paulo"
   }
 }
 
 // VPC Attachment
-resource "aws_ec2_transit_gateway_vpc_attachment" "sao_paulo-TGW-attachment" {
+resource "aws_ec2_transit_gateway_vpc_attachment" "saoaws_sao_paulo-TGW-attachment" {
   subnet_ids         = aws_subnet.public_subnet_SaoPaulo[*].id
-  transit_gateway_id = aws_ec2_transit_gateway.sao_paulo-TGW.id
+  transit_gateway_id = aws_ec2_transit_gateway.saoaws_sao_paulo-TGW.id
   vpc_id             = aws_vpc.saopaulo.id
   provider           = aws.sao_paulo
 }
+*/
