@@ -13,14 +13,12 @@ resource "aws_vpc" "security_zone" {
 resource "aws_subnet" "private-security-zone" {
   vpc_id            = aws_vpc.security_zone.id
   cidr_block        = "10.237.0.0/24"
-  availability_zone = "ap-northeast-1a" #Change to your AZ
+  availability_zone = "ap-northeast-1d"
   provider          = aws.tokyo
 
   tags = {
     Name    = "private-security-zone"
     Service = "logs-collection"
-    Owner   = "Chewbacca"
-    Planet  = "Musafar"
   }
 }
 resource "aws_subnet" "public-security-zone" {
@@ -33,8 +31,6 @@ resource "aws_subnet" "public-security-zone" {
   tags = {
     Name    = "public-security-zone"
     Service = "logs-collection"
-    Owner   = "Chewbacca"
-    Planet  = "Musafar"
   }
 }
 resource "aws_eip" "eip" {
@@ -153,7 +149,7 @@ resource "aws_iam_role_policy" "siem_policy" {
 resource "aws_instance" "SIEM_Server" {
   ami                    = "ami-023ff3d4ab11b2525"
   instance_type          = "t3.medium"
-  key_name               = "Siem1" # Replace with your own key
+  key_name               = "Siem1"
   subnet_id              = aws_subnet.private-security-zone.id
   vpc_security_group_ids = [aws_security_group.SIEM_SG.id]
   iam_instance_profile   = aws_iam_instance_profile.siem_profile.id
@@ -176,7 +172,6 @@ resource "aws_iam_instance_profile" "siem_profile" {
   provider = aws.tokyo
 
 }
-
 
 resource "aws_security_group" "SIEM_SG" {
   vpc_id   = aws_vpc.security_zone.id
@@ -280,9 +275,6 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "local_siem_attachment" {
     Name = "Attachment for tokyo"
   }
 }
-
-
-
 
 /*
 Read Me 

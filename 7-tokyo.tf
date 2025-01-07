@@ -287,24 +287,3 @@ resource "aws_autoscaling_group" "tokyo_ec2_asg" {
 
   health_check_type = "EC2"
 }
-/*
-// TGW
-resource "aws_ec2_transit_gateway" "tokyo-TGW" {
-  description = "tokyo-TGW"
-  provider    = aws.tokyo
-
-  tags = {
-    Name     = "tokyo-TGW"
-    Service  = "TGW"
-    Location = "tokyo"
-  }
-}
-
-// VPC Attachment
-resource "aws_ec2_transit_gateway_vpc_attachment" "tokyo-TGW-attachment" {
-  subnet_ids         = aws_subnet.public_subnet_Tokyo[*].id
-  transit_gateway_id = aws_ec2_transit_gateway.tokyo-TGW.id
-  vpc_id             = aws_vpc.tokyo.id
-  provider           = aws.tokyo
-}
-*/
