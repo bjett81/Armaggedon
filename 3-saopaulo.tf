@@ -263,3 +263,24 @@ resource "aws_autoscaling_group" "saoaws_sao_paulo_ec2_asg" {
 
   health_check_type = "EC2"
 }
+/*
+// TGW
+resource "aws_ec2_transit_gateway" "saoaws_sao_paulo-TGW" {
+  description = "saoaws_sao_paulo-TGW"
+  provider    = aws.sao_paulo
+
+  tags = {
+    Name     = "saoaws_sao_paulo-TGW"
+    Service  = "TGW"
+    Location = "saoaws_sao_paulo"
+  }
+}
+
+// VPC Attachment
+resource "aws_ec2_transit_gateway_vpc_attachment" "saoaws_sao_paulo-TGW-attachment" {
+  subnet_ids         = aws_subnet.public_subnet_SaoPaulo[*].id
+  transit_gateway_id = aws_ec2_transit_gateway.saoaws_sao_paulo-TGW.id
+  vpc_id             = aws_vpc.saopaulo.id
+  provider           = aws.sao_paulo
+}
+*/

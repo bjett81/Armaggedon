@@ -37,7 +37,16 @@ resource "aws_subnet" "private_subnet_Tokyo" {
     Name = "Tokyo Private Subnet${count.index + 1}",
   }
 }
-
+resource "aws_subnet" "db_subnet_Tokyo" {
+  vpc_id            = aws_vpc.tokyo.id
+  count             = 1
+  cidr_block        = cidrsubnet(aws_vpc.tokyo.cidr_block, 8, count.index + 51)
+  availability_zone = "ap-northeast-1d"
+  provider          = aws.tokyo
+  tags = {
+    Name = "Tokyo RDS Subnet${count.index + 1}",
+  }
+}
 // IGW
 resource "aws_internet_gateway" "tokyo_igw" {
   vpc_id   = aws_vpc.tokyo.id
@@ -287,3 +296,24 @@ resource "aws_autoscaling_group" "tokyo_ec2_asg" {
 
   health_check_type = "EC2"
 }
+/*
+// TGW
+resource "aws_ec2_transit_gateway" "tokyo-TGW" {
+  description = "tokyo-TGW"
+  provider    = aws.tokyo
+
+  tags = {
+    Name     = "tokyo-TGW"
+    Service  = "TGW"
+    Location = "tokyo"
+  }
+}
+
+// VPC Attachment
+resource "aws_ec2_transit_gateway_vpc_attachment" "tokyo-TGW-attachment" {
+  subnet_ids         = aws_subnet.public_subnet_Tokyo[*].id
+  transit_gateway_id = aws_ec2_transit_gateway.tokyo-TGW.id
+  vpc_id             = aws_vpc.tokyo.id
+  provider           = aws.tokyo
+}
+*/

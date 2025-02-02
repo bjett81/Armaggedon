@@ -1,7 +1,7 @@
 variable "vpc_availability_zone_California" {
   type        = list(string)
   description = "Availability Zone"
-  default     = ["us-west-1a", "us-west-1c"]
+  default     = ["us-west-1a", "us-west-1b"]
 }
 
 // VPC
@@ -262,3 +262,24 @@ resource "aws_autoscaling_group" "california_ec2_asg" {
 
   health_check_type = "EC2"
 }
+/*
+// TGW
+resource "aws_ec2_transit_gateway" "california-TGW" {
+  description = "california-TGW"
+  provider    = aws.california
+
+  tags = {
+    Name     = "california-TGW"
+    Service  = "TGW"
+    Location = "california"
+  }
+}
+
+// VPC Attachment
+resource "aws_ec2_transit_gateway_vpc_attachment" "california-TGW-attachment" {
+  subnet_ids         = aws_subnet.public_subnet_California[*].id
+  transit_gateway_id = aws_ec2_transit_gateway.california-TGW.id
+  vpc_id             = aws_vpc.california.id
+  provider           = aws.california
+}
+*/

@@ -41,7 +41,6 @@ provider "aws" {
   alias  = "california"
   region = "us-west-1"
 }
-
 provider "aws" {
   alias  = "osaka"
   region = "ap-northeast-3"
